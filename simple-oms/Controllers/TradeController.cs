@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
-namespace oms_service.Controllers
+namespace simple_oms.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -20,7 +20,7 @@ namespace oms_service.Controllers
             _tradeProcessor = tradeProcessor;
             _logger = logger;
         }
-        
+
         // GET: api/Trade
         [HttpGet]
         public string Get()
@@ -44,7 +44,7 @@ namespace oms_service.Controllers
         public string Test()
         {
             return JsonSerializer.Serialize(new Trade()
-                {Portfolio = "Pawel Capital", Ticker = "IBM", Side = "Buy", Price = 12.2m, Quantity = 1234});
+                { Portfolio = "Pawel Capital", Ticker = "IBM", Side = "Buy", Price = 12.2m, Quantity = 1234 });
         }
     }
 }

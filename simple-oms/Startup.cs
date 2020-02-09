@@ -10,8 +10,14 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using StackExchange.Redis.Extensions.Core;
+using StackExchange.Redis.Extensions.Core.Abstractions;
+using StackExchange.Redis.Extensions.Core.Configuration;
+using StackExchange.Redis.Extensions.Core.Implementations;
+using StackExchange.Redis.Extensions.Core.Extensions;
+using StackExchange.Redis.Extensions.Newtonsoft;
 
-namespace oms_service
+namespace simple_oms
 {
     public class Startup
     {
@@ -27,6 +33,14 @@ namespace oms_service
         {
             services.AddControllers();
             services.AddSingleton<TradeProcessor>();
+
+            var redisConfig = Configuration.GetSection("Redis").Get<RedisConfiguration>();
+
+            services.AddSingleton(redisConfig);
+            services.AddSingleton<IRedisCacheClient, RedisCacheClient>();
+            services.AddSingleton<IRedisCacheConnectionPoolManager, RedisCacheConnectionPoolManager>();
+            services.AddSingleton<IRedisDefaultCacheClient, RedisDefaultCacheClient>();
+            services.AddSingleton<StackExchange.Redis.Extensions.Core.ISerializer, NewtonsoftSerializer>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -38,7 +52,9 @@ namespace oms_service
             }
 
             app.UseHttpsRedirection();
+
             app.UseRouting();
+
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>

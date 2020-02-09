@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
-namespace oms_service
+namespace simple_oms
 {
     public class Trade
     {
+        [JsonIgnore] public string Key => Portfolio + "-" + Ticker;
         public string Ticker { get; set; }
         public string Side { get; set; }
         public string Portfolio { get; set; }

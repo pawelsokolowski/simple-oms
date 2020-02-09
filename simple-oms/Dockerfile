@@ -7,16 +7,16 @@ EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster AS build
 WORKDIR /src
-COPY ["oms-service/oms-service.csproj", "oms-service/"]
-RUN dotnet restore "oms-service/oms-service.csproj"
+COPY ["simple-oms.csproj", ""]
+RUN dotnet restore "./simple-oms.csproj"
 COPY . .
-WORKDIR "/src/oms-service"
-RUN dotnet build "oms-service.csproj" -c Release -o /app/build
+WORKDIR "/src/."
+RUN dotnet build "simple-oms.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "oms-service.csproj" -c Release -o /app/publish
+RUN dotnet publish "simple-oms.csproj" -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "oms-service.dll"]
+ENTRYPOINT ["dotnet", "simple-oms.dll"]

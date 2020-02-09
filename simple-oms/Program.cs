@@ -7,7 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace oms_service
+namespace simple_oms
 {
     public class Program
     {
@@ -22,9 +22,9 @@ namespace oms_service
                 {
                     webBuilder.UseStartup<Startup>();
                 }).UseDefaultServiceProvider((context, options) =>
-                    {
-                        options.ValidateScopes = context.HostingEnvironment.IsDevelopment();
-                        options.ValidateOnBuild = true;
-                    });
+                {
+                    options.ValidateScopes = context.HostingEnvironment.IsDevelopment();
+                    options.ValidateOnBuild = true;
+                });
     }
 }
