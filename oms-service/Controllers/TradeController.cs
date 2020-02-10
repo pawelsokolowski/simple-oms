@@ -36,7 +36,7 @@ namespace simple_oms.Controllers
 
             if (trade != null)
             {
-                _tradeProcessor.AddTrade(trade);
+                _tradeProcessor.AddTradeAsync(trade);
             }
         }
 

@@ -2,9 +2,50 @@ version: "3.7"
 
 services: 
   redis:
+    container_name: "simple-oms-redis"
     image: "redis:alpine"
     ports:
       - "6379:6379"
     volumes: 
       - F:\docker-data\data\redis\data:/data
   
+  lenses:
+    container_name: "kafka-lenses"
+    image: "lensesio/box"
+    environment: 
+      ADV_HOST: "127.0.0.1"
+      EULA: "https://dl.lenses.io/d/?id=cbc9d108-9810-49f6-b341-1b0006a1c18e"
+    ports:
+        - "3030:3030"
+        - "9092:9092"
+
+# docker run -e ADV_HOST=127.0.0.1 -e EULA="https://dl.lenses.io/d/?id=cbc9d108-9810-49f6-b341-1b0006a1c18e" --rm -p  3030:3030 -p 9092:9092 lensesio/box
+#-e ADV_HOST=127.0.0.1 -e EULA="https://dl.lenses.io/d/?id=cbc9d108-9810-49f6-b341-1b0006a1c18e" --rm -p  3030:3030 -p 9092:9092 lensesio/box
+
+  # kafkaserver:
+  #   image: "spotify/kafka:latest"
+  #   container_name: kafka
+  #   hostname: kafkaserver
+  #   networks:
+  #     - kafkanet
+  #   ports:
+  #     - 2181:2181
+  #     - 9092:9092
+  #   environment:
+  #     ADVERTISED_HOST: kafkaserver
+  #     ADVERTISED_PORT: 9092
+  # kafka_manager:
+  #   image: "mzagar/kafka-manager-docker:1.3.3.4"
+  #   container_name: kafkamanager
+  #   networks:
+  #     - kafkanet
+  #   ports:
+  #     - 9000:9000
+  #   links:
+  #     - kafkaserver
+  #   environment:
+  #     ZK_HOSTS: "kafkaserver:2181"
+    
+# networks:
+#   kafkanet:
+#     driver: bridge

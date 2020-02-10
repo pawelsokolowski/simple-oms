@@ -13,19 +13,21 @@ namespace simple_oms
     public interface ITradeProcessor
     {
         public List<Position> Positions { get; }
-        public Task AddTrade(Trade trade);
+        public Task AddTradeAsync(Trade trade);
     }
     public class TradeProcessor : ITradeProcessor
     {
         private readonly IRedisCacheClient _redis;
         private readonly ILogger<TradeProcessor> _logger;
+        private readonly IKafkaProxy _kafkaProxy;
 
         public List<Position> Positions => GetAllPositions().GetAwaiter().GetResult().Values.ToList();
 
-        public TradeProcessor(ILogger<TradeProcessor> logger, IRedisCacheClient redis)
+        public TradeProcessor(ILogger<TradeProcessor> logger, IRedisCacheClient redis, IKafkaProxy kafkaProxy)
         {
             _logger = logger;
             _redis = redis;
+            _kafkaProxy = kafkaProxy;
         }
 
         public async Task<IDictionary<string,Position>> GetAllPositions()
@@ -36,34 +38,28 @@ namespace simple_oms
             return positions;
         }
 
-        public async Task AddTrade(Trade trade)
+        public async Task AddTradeAsync(Trade trade)
         {
-            var positions = await _redis.Db0.GetAllAsync<Position>(new string[] { trade.Key });
+            var positions = await _redis.Db0.GetAllAsync<Position>(new string[] {trade.Key});
 
-            Position? position = positions?.FirstOrDefault().Value;
+            Position position = positions?.FirstOrDefault().Value;
 
             _logger.LogInformation($"Processing trade : {trade}");
 
             if (position != null)
             {
-                if (trade.Side.Equals("buy", StringComparison.InvariantCultureIgnoreCase))
-                {
-                    position.Quantity += trade.Quantity;
-                    position.CurrentPrice = trade.Price;
-                    position.MarketValue = trade.Price * position.Quantity;
-                }
-                else
-                {
-                    position.Quantity -= trade.Quantity;
-                    position.CurrentPrice = trade.Price;
-                    position.MarketValue = trade.Price * position.Quantity;
-                }
+                position.Quantity = trade.Side.Equals("buy", StringComparison.InvariantCultureIgnoreCase)
+                    ? position.Quantity + trade.Quantity
+                    : position.Quantity - trade.Quantity;
+                position.CurrentPrice = trade.Price;
+                position.MarketValue = trade.Price * position.Quantity;
 
                 await _redis.Db0.AddAsync(position.Key, position);
             }
-            else if (trade.Side.Equals("buy", StringComparison.InvariantCultureIgnoreCase)) // ignore sells if there is no position 
+            else if (trade.Side.Equals("buy", StringComparison.InvariantCultureIgnoreCase)
+            ) // ignore sells if there is no position 
             {
-                var newPost = new Position()
+                position = new Position()
                 {
                     Portfolio = trade.Portfolio,
                     Ticker = trade.Ticker,
@@ -72,8 +68,11 @@ namespace simple_oms
                     MarketValue = trade.Quantity * trade.Price
                 };
 
-                await _redis.Db0.AddAsync(newPost.Key, newPost);
+                await _redis.Db0.AddAsync(position.Key, position);
             }
+
+            _kafkaProxy.SendTradeAsync(trade);
+            _kafkaProxy.SendPositionAsync(position);
         }
     }
 }

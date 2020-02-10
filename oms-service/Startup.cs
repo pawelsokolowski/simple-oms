@@ -38,6 +38,7 @@ namespace simple_oms
 
             services.AddSingleton(redisConfig);
             services.AddSingleton<IRedisCacheClient, RedisCacheClient>();
+            services.AddSingleton<IKafkaProxy, KafkaProxy>();
             services.AddSingleton<IRedisCacheConnectionPoolManager, RedisCacheConnectionPoolManager>();
             services.AddSingleton<IRedisDefaultCacheClient, RedisDefaultCacheClient>();
             services.AddSingleton<StackExchange.Redis.Extensions.Core.ISerializer, NewtonsoftSerializer>();
@@ -54,7 +55,7 @@ namespace simple_oms
             app.UseHttpsRedirection();
 
             app.UseRouting();
-
+            
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
